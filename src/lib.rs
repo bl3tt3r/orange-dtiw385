@@ -2,10 +2,15 @@ use reqwest::Client;
 use serde::de::DeserializeOwned;
 use std::{
     net::{Ipv4Addr, SocketAddrV4},
-    ops::RangeInclusive,
+    ops::{Deref, RangeInclusive},
+    sync::Arc,
     time::Duration,
 };
 use thiserror::Error;
+use tokio::{
+    sync::{Semaphore, mpsc},
+    task::JoinSet,
+};
 
 use crate::response::{Empty, InfosData, Response};
 
@@ -13,6 +18,7 @@ pub mod key;
 pub mod response;
 
 const DEFAULT_CLIENT_TIMEOUT_MS: u64 = 250;
+const DEFAULT_CONCURRENCY: usize = 50;
 
 const MODE_PRESS: u8 = 0;
 const MODE_HOLD: u8 = 1;
@@ -68,15 +74,27 @@ impl Decoders {
     ///
     /// * `ips` - Range of IPv4 addresses to scan.
     /// * `ports` - Range of ports to probe on each address.
-    pub fn search(ips: RangeInclusive<Ipv4Addr>, ports: RangeInclusive<u8>) -> DecoderSearch {
+    pub fn search(
+        ips: RangeInclusive<impl Into<Ipv4Addr>>,
+        ports: RangeInclusive<impl Into<u16>>,
+    ) -> DecoderSearch {
+        let ips = {
+            let (start, end) = ips.into_inner();
+            start.into()..=end.into()
+        };
+        let ports = {
+            let (start, end) = ports.into_inner();
+            start.into()..=end.into()
+        };
         DecoderSearch::new(ips, ports)
     }
 }
 
 pub struct DecoderSearch {
     ips: RangeInclusive<Ipv4Addr>,
-    ports: RangeInclusive<u8>,
+    ports: RangeInclusive<u16>,
     client: Client,
+    concurrency: usize,
 }
 
 impl DecoderSearch {
@@ -86,9 +104,15 @@ impl DecoderSearch {
     ///
     /// * `ips` - Range of IPv4 addresses to scan.
     /// * `ports` - Range of ports to probe on each address.
-    fn new(ips: RangeInclusive<Ipv4Addr>, ports: RangeInclusive<u8>) -> Self {
+    fn new(ips: RangeInclusive<Ipv4Addr>, ports: RangeInclusive<u16>) -> Self {
         let client = build_client(DEFAULT_CLIENT_TIMEOUT_MS);
-        Self { ips, ports, client }
+        let concurrency = DEFAULT_CONCURRENCY;
+        Self {
+            ips,
+            ports,
+            client,
+            concurrency,
+        }
     }
 
     /// Sets the timeout used when probing each address.
@@ -101,15 +125,64 @@ impl DecoderSearch {
         self
     }
 
+    pub fn with_concurrency(mut self, concurrency: usize) -> Self {
+        self.concurrency = concurrency;
+        self
+    }
+
     /// Executes the scan and returns all reachable decoders found in the configured range.
-    pub fn find(&self) -> Vec<Decoder> {
-        todo!();
+    pub fn find(&self) -> mpsc::Receiver<Decoder> {
+        let (tx, rx) = mpsc::channel(32);
+        let start = u32::from(*self.ips.start());
+        let end = u32::from(*self.ips.end());
+        let ports = self.ports.clone();
+        let client = self.client.clone();
+        let sem = Arc::new(Semaphore::new(self.concurrency));
+
+        tokio::spawn(async move {
+            let mut tasks = JoinSet::new();
+
+            for ip_u32 in start..=end {
+                let ip = Ipv4Addr::from(ip_u32);
+                for port in ports.clone() {
+                    let tx = tx.clone();
+                    let client = client.clone();
+                    let sem = sem.clone();
+                    tasks.spawn(async move {
+                        let _ = sem.acquire_owned().await.unwrap();
+
+                        let socket = SocketAddrV4::new(ip, port);
+                        let url = format!(
+                            "http://{}/remoteControl/cmd?operation=10&key=0&mode=0",
+                            socket
+                        );
+                        if client.get(&url).send().await.is_ok() {
+                            let decoder = Decoder { socket, client };
+                            let _ = tx.send(decoder).await;
+                        }
+                        // _permit droppé ici → libère un slot pour la prochaine tâche
+                    });
+                }
+            }
+
+            while tasks.join_next().await.is_some() {}
+        });
+
+        rx
     }
 }
 
 pub struct Decoder {
     socket: SocketAddrV4,
     client: Client,
+}
+
+impl Deref for Decoder {
+    type Target = SocketAddrV4;
+
+    fn deref(&self) -> &Self::Target {
+        &self.socket
+    }
 }
 
 impl Decoder {
