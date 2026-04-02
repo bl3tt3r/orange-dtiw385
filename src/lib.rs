@@ -1,6 +1,5 @@
 use reqwest::Client;
 use serde::de::DeserializeOwned;
-use serde_json::Value;
 use std::{
     net::{Ipv4Addr, SocketAddrV4},
     ops::RangeInclusive,
@@ -8,7 +7,7 @@ use std::{
 };
 use thiserror::Error;
 
-use crate::response::{InfosData, Response};
+use crate::response::{Empty, InfosData, Response};
 
 pub mod key;
 pub mod response;
@@ -135,28 +134,20 @@ impl Decoder {
         self
     }
 
-    pub async fn name(&self) -> Result<String, DecoderError> {
-        self.request::<InfosData>(10, 0, 0)
-            .await
-            .map(|response| response.result.data.friendly_name)
+    pub async fn infos(&self) -> Result<InfosData, DecoderError> {
+        self.request::<InfosData>(10, 0, 0).await
     }
 
-    pub async fn press(&self, key: impl Into<u16>) -> Result<(), DecoderError> {
-        self.request::<Value>(1, key.into(), MODE_PRESS)
-            .await
-            .map(|_| ())
+    pub async fn press(&self, key: impl Into<u16>) -> Result<Empty, DecoderError> {
+        self.request(1, key.into(), MODE_PRESS).await
     }
 
-    pub async fn hold(&self, key: impl Into<u16>) -> Result<(), DecoderError> {
-        self.request::<Value>(1, key.into(), MODE_HOLD)
-            .await
-            .map(|_| ())
+    pub async fn hold(&self, key: impl Into<u16>) -> Result<Empty, DecoderError> {
+        self.request(1, key.into(), MODE_HOLD).await
     }
 
-    pub async fn release(&self, key: impl Into<u16>) -> Result<(), DecoderError> {
-        self.request::<Value>(1, key.into(), MODE_RELEASE)
-            .await
-            .map(|_| ())
+    pub async fn release(&self, key: impl Into<u16>) -> Result<Empty, DecoderError> {
+        self.request(1, key.into(), MODE_RELEASE).await
     }
 
     async fn request<D: DeserializeOwned>(
@@ -164,16 +155,16 @@ impl Decoder {
         operation: u8,
         key: u16,
         mode: u8,
-    ) -> Result<Response<D>, DecoderError> {
+    ) -> Result<D, DecoderError> {
         let url = format!(
             "http://{}/remoteControl/cmd?operation={}&key={}&mode={}",
             self.socket, operation, key, mode
         );
         let request = self.client.get(url).send();
-        let response = request.await?.json::<Response<D>>().await?;
-        if response.result.response_code != "0" {
-            return Err(DecoderError::InvalidResponse(response.result.message));
+        let result = request.await?.json::<Response<D>>().await?.result;
+        if result.response_code != "0" {
+            return Err(DecoderError::InvalidResponse(result.message));
         }
-        Ok(response)
+        Ok(result.data)
     }
 }

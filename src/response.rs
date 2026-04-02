@@ -16,6 +16,10 @@ pub struct Result<D> {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct Empty {}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct InfosData {
     pub played_media_type: String,
     pub played_media_state: String,
