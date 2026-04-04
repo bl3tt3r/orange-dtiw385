@@ -69,7 +69,7 @@ Each discovered decoder is sent through the receiver.
 
 ### 🎮 Interact with a decoder
 
-#### 🎹 Keys
+#### 🎹 Keys
 
 The library provides a `Key` enum with most common remote control buttons already mapped.
 
