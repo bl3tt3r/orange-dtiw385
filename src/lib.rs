@@ -452,10 +452,7 @@ mod tests {
     use super::*;
     use serde_json::json;
     use std::net::Ipv4Addr;
-    use wiremock::{
-        Mock, MockServer, ResponseTemplate,
-        matchers::{method, path},
-    };
+    use wiremock::{Mock, MockServer, ResponseTemplate, matchers::method};
 
     fn decoder_from(server: &MockServer) -> Decoder {
         Decoders::connect(
