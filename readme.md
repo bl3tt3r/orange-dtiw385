@@ -126,6 +126,7 @@ let decoder = Decoder::new([192, 168, 1, 10], 8080);
 decoder.press(Key::Ok).await?;
 decoder.hold(Key::VolumeUp).await?;
 decoder.release(Key::VolumeUp).await?;
+```
 
 ---
 
