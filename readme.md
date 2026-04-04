@@ -1,6 +1,6 @@
 # dtiw385
 
-[![License](https://img.shields.io/badge/MIT-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/LICENCE-MIT-blue.svg)](./LICENSE)
 ![Rust Edition](https://img.shields.io/badge/edition-2024-orange)
 ![Macroquad](https://img.shields.io/badge/macroquad-0.4.x-success)
 ![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
