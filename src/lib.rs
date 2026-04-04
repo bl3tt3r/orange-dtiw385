@@ -452,31 +452,46 @@ mod tests {
     use super::*;
     use serde_json::json;
     use std::net::Ipv4Addr;
-    use wiremock::{Mock, MockServer, ResponseTemplate, matchers::method};
+    use wiremock::{
+        Mock, MockServer, ResponseTemplate,
+        matchers::{method, path},
+    };
 
     fn decoder_from(server: &MockServer) -> Decoder {
         Decoders::connect(
-            "127.0.0.1".parse::<Ipv4Addr>().unwrap(),
+            server
+                .address()
+                .ip()
+                .to_string()
+                .parse::<Ipv4Addr>()
+                .unwrap(),
             server.address().port(),
         )
     }
 
-    /*    #[tokio::test]
+    #[tokio::test]
     async fn infos_success() {
         let server = MockServer::start().await;
 
         let body = json!({
-            "result": {
-                "response_code": "0",
-                "message": "ok",
-                "data": {
-                    "friendly_name": "Decoder",
-                    "mac_address": "AA:BB:CC:DD:EE:FF",
-                    "standby": false,
-                    "playing": false,
-                    "playedMediaType": null
-                }
+          "result": {
+            "responseCode": "0",
+            "message": "ok",
+            "data": {
+              "osdContext": "",
+              "playedMediaType": "NA",
+              "playedMediaState": "NA",
+              "playedMediaId": "",
+              "playedMediaContextId": "",
+              "playedMediaPosition": "NA",
+              "timeShiftingState": "NA",
+              "macAddress": "20:9A:7D:D6:56:B7",
+              "wolSupport": "0",
+              "friendlyName": "Decodeur TV UHD",
+              "activeStandbyState": "0",
+              "npvrSupport": "0"
             }
+          }
         });
 
         Mock::given(method("GET"))
@@ -489,8 +504,8 @@ mod tests {
 
         let info = decoder.infos().await.unwrap();
 
-        assert_eq!(info.friendly_name, "Decoder");
-        assert_eq!(info.mac_address, "AA:BB:CC:DD:EE:FF");
+        assert_eq!(info.friendly_name, "Decodeur TV UHD");
+        assert_eq!(info.mac_address, "20:9A:7D:D6:56:B7");
     }
 
     #[tokio::test]
@@ -499,11 +514,9 @@ mod tests {
 
         let body = json!({
             "result": {
-                "response_code": "0",
+                "responseCode": "0",
                 "message": "ok",
-                "data": {
-                    "playedMediaType": null
-                }
+                "data": {}
             }
         });
 
@@ -526,11 +539,9 @@ mod tests {
 
         let body = json!({
             "result": {
-                "response_code": "0",
+                "responseCode": "0",
                 "message": "ok",
-                "data": {
-                    "playedMediaType": null
-                }
+                "data": {}
             }
         });
 
@@ -546,7 +557,7 @@ mod tests {
 
         assert!(hold.is_ok());
         assert!(release.is_ok());
-    } */
+    }
 
     #[tokio::test]
     async fn api_error_returns_invalid_response() {
@@ -554,7 +565,7 @@ mod tests {
 
         let body = json!({
             "result": {
-                "response_code": "1",
+                "responseCode": "1",
                 "message": "error",
                 "data": {}
             }
@@ -568,7 +579,6 @@ mod tests {
         let decoder = decoder_from(&server);
 
         let res = decoder.press(key::Key::Ok).await;
-
         assert!(res.is_err());
     }
 

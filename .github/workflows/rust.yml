@@ -1,22 +1,80 @@
-name: Rust
+name: Rust CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  check:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy, llvm-tools-preview
+
+      # ======================
+      # Format check
+      # ======================
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      # ======================
+      # Lint (Clippy)
+      # ======================
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      # ======================
+      # Build
+      # ======================
+      - name: Build
+        run: cargo build --verbose --all-features
+
+      # ======================
+      # Tests
+      # ======================
+      - name: Run tests
+        run: cargo test --verbose --all-features
+
+      # ======================
+      # Coverage (llvm-cov)
+      # ======================
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov
+
+      - name: Run coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: lcov.info
+
+      # ======================
+      # Check unused dependencies
+      # ======================
+      - name: Install cargo-udeps
+        run: cargo install cargo-udeps --locked
+
+      - name: Check unused dependencies
+        run: cargo +nightly udeps
+
+      # ======================
+      # Check unused features
+      # ======================
+      - name: Install cargo-hack
+        run: cargo install cargo-hack
+
+      - name: Check feature combinations
+        run: cargo hack check --each-feature --all
