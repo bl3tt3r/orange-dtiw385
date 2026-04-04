@@ -5,7 +5,9 @@
 ![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
 ![CI](https://github.com/bl3tt3r/dtiw385/actions/workflows/rust.yml/badge.svg)
 
-Async Rust client to discover and control DTIW385 decoders over the network.
+Async Rust client to discover and control [🟠 Orange](https://www.orange.fr/) DTIW385 decoders over the network.
+
+__This project is not affiliated with, endorsed by, or sponsored by Orange.__
 
 ---
 
@@ -13,10 +15,19 @@ Async Rust client to discover and control DTIW385 decoders over the network.
 
 Add this to your `Cargo.toml`:
 
+### 🔹 From Git (latest development version)
+
 ```toml
 [dependencies]
-dtiw385 = "0.1"
-````
+dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", branch = "master" }
+```
+
+### 🔖 From a tagged release (recommended)
+
+```toml
+[dependencies]
+dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", tag = "v0.1.0" }
+```
 
 ---
 
