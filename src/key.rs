@@ -1,3 +1,30 @@
+/// Remote control keys supported by the decoder.
+///
+/// Pass a `Key` variant to [`Decoder::press`](crate::Decoder::press),
+/// [`Decoder::hold`](crate::Decoder::hold), or
+/// [`Decoder::release`](crate::Decoder::release).
+///
+/// Each variant maps to the Linux input event code sent over the HTTP API.
+/// Raw `u16` codes can also be used directly if a key is not listed here.
+///
+/// # Example
+///
+/// ```no_run
+/// use dtiw385::{Decoders, key::Key};
+///
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let decoder = Decoders::connect([192, 168, 1, 10], 8080);
+///
+/// // Short press on the OK key
+/// decoder.press(Key::Ok).await?;
+///
+/// // Use a raw code for unlisted keys
+/// decoder.press(116u16).await?;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug, Clone, Copy)]
 pub enum Key {
     // Power
     PowerOnOff,

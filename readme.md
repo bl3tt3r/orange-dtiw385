@@ -1,105 +1,171 @@
-# orange-dtiw385
+# dtiw385
 
-Une crate Rust pour contrôler à distance un décodeur **Orange DTIW385** via son interface HTTP locale.
+[![Crates.io](https://img.shields.io/crates/v/dtiw385.svg)](https://crates.io/crates/dtiw385)
+[![Docs.rs](https://docs.rs/dtiw385/badge.svg)](https://docs.rs/dtiw385)
+[![License](https://img.shields.io/crates/l/dtiw385.svg)](#license)
+[![Rust](https://img.shields.io/badge/rust-1.70%2B-blue.svg)](https://www.rust-lang.org)
 
-## Fonctionnalités
+Async Rust client to discover and control DTIW385 decoders over the network.
 
-- Lecture des informations du décodeur (nom, état veille, média en cours…)
-- Envoi de touches de télécommande (alimentation, navigation, volume, chaînes, lecture, chiffres)
-- Changement de chaîne
-- Support des modes de touche : appui, maintien, relâchement
-- Client HTTP async basé sur `tokio` + `reqwest`
+---
 
-## Installation
+## 📦 Installation
 
-Ajoute la crate à ton `Cargo.toml` :
+Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-orange-dtiw385 = { git = "https://github.com/bl3tt3r/orange-dtiw385" }
-```
+dtiw385 = "0.1"
+````
 
-## Utilisation rapide
+---
+
+## 🚀 Usage
+
+The library provides two main ways to work with decoders.
+
+### 🔌 Connect to a known decoder
+
+If you already know the IP and port, you can create a decoder directly:
 
 ```rust
-use std::net::Ipv4Addr;
-use orange_dtiw385::{Infos, Mode, Operation, cmd::Cmd, decoder::Decoder, key};
+use dtiw385::Decoder;
 
-#[tokio::main]
-async fn main() {
-    let decoder = Decoder::new("192.168.1.16".parse::<Ipv4Addr>().unwrap())
-        .with_port(8080);
-
-    // Lire les informations du décodeur
-    let infos = decoder.infos().await.unwrap();
-    println!("Nom : {}", infos.friendly_name);
-    println!("En veille : {}", infos.active_standby_state);
-
-    // Envoyer une touche (ex: allumer/éteindre)
-    decoder
-        .send::<()>(
-            Some(Operation::SendKey),
-            Some(&key::Power::OnOff),
-            Some(Mode::Press),
-        )
-        .await
-        .unwrap();
-}
+let decoder = Decoder::new([192, 168, 1, 10], 8080);
 ```
 
-## Touches disponibles
+You can then send commands to the device (button actions like press, hold, release).
 
-| Groupe       | Variantes                                           |
-| ------------ | --------------------------------------------------- |
-| `Power`      | `OnOff`                                             |
-| `Navigation` | `Ok`, `Up`, `Down`, `Left`, `Right`, `Back`, `Menu` |
-| `Volume`     | `Up`, `Down`, `Mute`                                |
-| `Channel`    | `Up`, `Down`                                        |
-| `Playback`   | `Play`, `Pause`, `Stop`, `Forward`, `Rewind`        |
-| `Number`     | `N0` … `N9`                                         |
+---
 
-## Modes
+### 🔍 Discover decoders on the network
 
-| Mode      | Description              |
-| --------- | ------------------------ |
-| `Press`   | Appui simple             |
-| `Hold`    | Maintien de la touche    |
-| `Release` | Relâchement de la touche |
+Scan a range of IPs and ports to find available devices:
 
-## Opérations
+```rust
+use dtiw385::Decoders;
 
-| Opération       | Code | Description                |
-| --------------- | ---- | -------------------------- |
-| `SendKey`       | 1    | Envoyer une touche         |
-| `ReadInfos`     | 10   | Lire les infos du décodeur |
-| `ChangeChannel` | 9    | Changer de chaîne          |
-
-## API HTTP
-
-La crate communique avec le décodeur via :
-
-```
-GET http://{ip}:{port}/remoteControl/cmd?operation={op}&key={code}&mode={mode}
+let mut rx = Decoders::search(
+    [192, 168, 1, 1]..=[192, 168, 1, 254],
+    8080..=8080,
+)
+.find();
 ```
 
-Le port par défaut est `8080`.
+Each discovered decoder is sent through the receiver.
 
-## CLI
+---
 
-Un exemple de CLI interactif est fourni dans `examples/cli.rs`. Il permet de se connecter à un décodeur et d'envoyer des commandes basiques depuis le terminal.
+### 🎮 Interact with a decoder
+
+#### 🎹 Keys
+
+The library provides a `Key` enum with most common remote control buttons already mapped.
+
+Each key is internally converted to a Linux input event code (`u16`) when sent to the decoder.
+
+You can use these keys directly with:
+
+- `press`
+- `hold`
+- `release`
+
+---
+
+##### 📋 Available keys
+
+| Key           | Description        |
+| ------------- | ------------------ |
+| `PowerOnOff`  | Power toggle       |
+| `Ok`          | Validate selection |
+| `Up`          | Navigate up        |
+| `Down`        | Navigate down      |
+| `Left`        | Navigate left      |
+| `Right`       | Navigate right     |
+| `Back`        | Go back            |
+| `Menu`        | Open menu          |
+| `VolumeUp`    | Increase volume    |
+| `VolumeDown`  | Decrease volume    |
+| `Mute`        | Mute sound         |
+| `ChannelUp`   | Next channel       |
+| `ChannelDown` | Previous channel   |
+| `Play`        | Play               |
+| `Pause`       | Pause              |
+| `Stop`        | Stop               |
+| `Forward`     | Fast forward       |
+| `Rewind`      | Rewind             |
+| `N0`          | Number 0           |
+| `N1`          | Number 1           |
+| `N2`          | Number 2           |
+| `N3`          | Number 3           |
+| `N4`          | Number 4           |
+| `N5`          | Number 5           |
+| `N6`          | Number 6           |
+| `N7`          | Number 7           |
+| `N8`          | Number 8           |
+| `N9`          | Number 9           |
+
+#### 🧪 Example
+
+```rust
+use dtiw385::{Decoder, Key};
+
+let decoder = Decoder::new([192, 168, 1, 10], 8080);
+
+decoder.press(Key::Ok).await?;
+decoder.hold(Key::VolumeUp).await?;
+decoder.release(Key::VolumeUp).await?;
+
+---
+
+## ⚙️ Configuration
+
+### 🔁 Concurrency
+
+```rust
+Decoders::search(ip_range, port_range)
+    .with_concurrency(50);
+```
+
+* Higher value = faster scan ⚡
+* But more CPU and network usage 🔥
+
+---
+
+### ⏱️ Timeout
+
+```rust
+Decoders::search(ip_range, port_range)
+    .with_timeout(500);
+```
+
+* Timeout is in milliseconds
+* Lower = faster failure
+* Higher = more reliable but slower
+
+---
+
+## 📚 Examples
+
+Examples are available in the `examples/` folder.
+
+- [find_available_decoders](examples/find_available_decoders.rs)
+- [get_decoder_infos](examples/get_decoder_infos.rs)
+- [switch_decoder_power](examples/switch_decoder_power.rs)
+
+Run one with:
 
 ```bash
-cargo run --example cli
+cargo run --example get_decoder_infos
 ```
 
-## Dépendances
+---
 
-| Crate     | Version | Utilisation                  |
-| --------- | ------- | ---------------------------- |
-| `tokio`   | 1.50    | Runtime async                |
-| `reqwest` | 0.13    | Client HTTP                  |
-| `serde`   | 1       | Désérialisation des réponses |
+## 📄 License
+MIT
 
-## Licence
+---
 
-Ce projet n'a pas encore de licence définie.
+<p align="center">
+  Made with ❤️ and Rust 🦀
+</p>
