@@ -1,9 +1,9 @@
 # dtiw385
 
-[![Crates.io](https://img.shields.io/crates/v/dtiw385.svg)](https://crates.io/crates/dtiw385)
-[![Docs.rs](https://docs.rs/dtiw385/badge.svg)](https://docs.rs/dtiw385)
-[![License](https://img.shields.io/crates/l/dtiw385.svg)](#license)
-[![Rust](https://img.shields.io/badge/rust-1.70%2B-blue.svg)](https://www.rust-lang.org)
+[![License](https://img.shields.io/badge/MIT-blue.svg)](./LICENSE)
+![Rust Edition](https://img.shields.io/badge/edition-2024-orange)
+![Macroquad](https://img.shields.io/badge/macroquad-0.4.x-success)
+![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
 
 Async Rust client to discover and control DTIW385 decoders over the network.
 
@@ -161,8 +161,7 @@ cargo run --example get_decoder_infos
 
 ---
 
-## 📄 License
-MIT
+License : MIT
 
 ---
 
