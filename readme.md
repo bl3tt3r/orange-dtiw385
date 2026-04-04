@@ -5,7 +5,7 @@
 ![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
 ![CI](https://github.com/bl3tt3r/dtiw385/actions/workflows/rust.yml/badge.svg)
 
-Async Rust client to discover and control [🟠 Orange](https://www.orange.fr/) DTIW385 decoders over the network.
+This crate provides a Rust API to interact with [🟠 Orange](https://www.orange.fr/) DTIW385 decoders, allowing discovery, querying device information, and sending async remote control commands over the network.
 
 __This project is not affiliated with, endorsed by, or sponsored by Orange.__
 
@@ -139,8 +139,8 @@ Decoders::search(ip_range, port_range)
     .with_concurrency(50);
 ```
 
-* Higher value = faster scan ⚡
-* But more CPU and network usage 🔥
+* **Higher value** = faster scan ⚡
+* **But more CPU and network usage 🔥**
 
 ---
 
@@ -151,9 +151,9 @@ Decoders::search(ip_range, port_range)
     .with_timeout(500);
 ```
 
-* Timeout is in milliseconds
-* Lower = faster failure
-* Higher = more reliable but slower
+* **Timeout** is in milliseconds
+* **Lower** = faster failure
+* **Higher** = more reliable but slower
 
 ---
 
