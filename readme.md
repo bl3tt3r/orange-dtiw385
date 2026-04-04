@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/LICENCE-MIT-blue.svg)](./LICENSE)
 ![Rust Edition](https://img.shields.io/badge/edition-2024-orange)
 ![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
+![CI](https://github.com/bl3tt3r/dtiw385/actions/workflows/rust.yml/badge.svg)
 
 Async Rust client to discover and control DTIW385 decoders over the network.
 
