@@ -1,6 +1,5 @@
-use std::ops::RangeInclusive;
-
 use dtiw385::Decoders;
+use std::ops::RangeInclusive;
 
 // Subnet to scan — adjust to match your local network
 const IPS_RANGE: RangeInclusive<[u8; 4]> = [192, 168, 1, 0]..=[192, 168, 1, 255];

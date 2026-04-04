@@ -60,6 +60,7 @@ jobs:
         with:
           name: coverage-report
           path: lcov.info
+          retention-days: 30
 
       # ======================
       # Check unused dependencies
