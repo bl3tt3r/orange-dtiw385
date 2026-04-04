@@ -81,7 +81,7 @@ impl Decoders {
     /// # async fn main() {
     /// let mut rx = Decoders::search(
     ///     [192, 168, 1, 1]..=[192, 168, 1, 254],
-    ///     8080..=8080,
+    ///     8080u16..=8080u16,
     /// )
     /// .with_concurrency(50)
     /// .find();
@@ -444,5 +444,148 @@ impl Decoder {
             "http://{}/remoteControl/cmd?operation={}&key={}&mode={}",
             self.socket, operation, key, mode
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use std::net::Ipv4Addr;
+    use wiremock::{
+        Mock, MockServer, ResponseTemplate,
+        matchers::{method, path},
+    };
+
+    fn decoder_from(server: &MockServer) -> Decoder {
+        Decoders::connect(
+            "127.0.0.1".parse::<Ipv4Addr>().unwrap(),
+            server.address().port(),
+        )
+    }
+
+    /*    #[tokio::test]
+    async fn infos_success() {
+        let server = MockServer::start().await;
+
+        let body = json!({
+            "result": {
+                "response_code": "0",
+                "message": "ok",
+                "data": {
+                    "friendly_name": "Decoder",
+                    "mac_address": "AA:BB:CC:DD:EE:FF",
+                    "standby": false,
+                    "playing": false,
+                    "playedMediaType": null
+                }
+            }
+        });
+
+        Mock::given(method("GET"))
+            .and(path("/remoteControl/cmd"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&server)
+            .await;
+
+        let decoder = decoder_from(&server);
+
+        let info = decoder.infos().await.unwrap();
+
+        assert_eq!(info.friendly_name, "Decoder");
+        assert_eq!(info.mac_address, "AA:BB:CC:DD:EE:FF");
+    }
+
+    #[tokio::test]
+    async fn press_success() {
+        let server = MockServer::start().await;
+
+        let body = json!({
+            "result": {
+                "response_code": "0",
+                "message": "ok",
+                "data": {
+                    "playedMediaType": null
+                }
+            }
+        });
+
+        Mock::given(method("GET"))
+            .and(path("/remoteControl/cmd"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&server)
+            .await;
+
+        let decoder = decoder_from(&server);
+
+        let res = decoder.press(key::Key::Ok).await;
+
+        assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn hold_and_release_success() {
+        let server = MockServer::start().await;
+
+        let body = json!({
+            "result": {
+                "response_code": "0",
+                "message": "ok",
+                "data": {
+                    "playedMediaType": null
+                }
+            }
+        });
+
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&server)
+            .await;
+
+        let decoder = decoder_from(&server);
+
+        let hold = decoder.hold(key::Key::Up).await;
+        let release = decoder.release(key::Key::Up).await;
+
+        assert!(hold.is_ok());
+        assert!(release.is_ok());
+    } */
+
+    #[tokio::test]
+    async fn api_error_returns_invalid_response() {
+        let server = MockServer::start().await;
+
+        let body = json!({
+            "result": {
+                "response_code": "1",
+                "message": "error",
+                "data": {}
+            }
+        });
+
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&server)
+            .await;
+
+        let decoder = decoder_from(&server);
+
+        let res = decoder.press(key::Key::Ok).await;
+
+        assert!(res.is_err());
+    }
+
+    #[tokio::test]
+    async fn ping_success() {
+        let server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .respond_with(ResponseTemplate::new(200))
+            .mount(&server)
+            .await;
+
+        let decoder = decoder_from(&server);
+
+        assert!(decoder.ping().await);
     }
 }
