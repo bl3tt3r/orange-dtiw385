@@ -399,7 +399,7 @@ impl Decoder {
     /// Returns `true` if the decoder responds to a status request.
     ///
     /// Used internally during network scans to filter reachable devices.
-    async fn ping(&self) -> bool {
+    pub async fn ping(&self) -> bool {
         let url = self.build_url(10, 0, 0);
         self.client.get(&url).send().await.is_ok()
     }

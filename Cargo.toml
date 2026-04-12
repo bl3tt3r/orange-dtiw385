@@ -2,15 +2,25 @@
 name = "dtiw385"
 version = "0.1.0"
 edition = "2024"
+description = "Crate to discover and control Orange DTIW385 decoders over the network."
+license-file = "LICENSE"
+
+repository = "https://github.com/bl3tt3r/dtiw385"
+readme = "readme.md"
+keywords = ["orange", "decoder", "tv", "remote-control", "network"]
+categories = ["api-bindings", "hardware-support", "network-programming"]
+
+[badges]
+maintenance = { status = "passively-maintained" }
 
 [dependencies]
-tokio = { version = "1.51", features = ["rt-multi-thread"] }
+tokio = { version = "1.51.1", features = ["rt-multi-thread"] }
 reqwest = { version = "0.13", features = ["json"], default-features = false }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 tracing = "0.1"
 
-
 [dev-dependencies]
+tokio = { version = "1.51.1", features = ["macros"] }
 wiremock = "0.6"
 serde_json = "1"
