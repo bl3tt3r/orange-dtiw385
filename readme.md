@@ -15,6 +15,15 @@ __This project is not affiliated with, endorsed by, or sponsored by Orange.__
 
 Add this to your `Cargo.toml`:
 
+### 📦 From crates.io (recommended)
+
+```toml
+[dependencies]
+dtiw385 = "0.1.1"
+```
+
+__Or run the following Cargo command in your project directory: `cargo add dtiw385`__
+
 ### 🔹 From Git (latest development version)
 
 ```toml
@@ -22,11 +31,11 @@ Add this to your `Cargo.toml`:
 dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", branch = "master" }
 ```
 
-### 🔖 From a tagged release (recommended)
+### 🔖 From a tagged release
 
 ```toml
 [dependencies]
-dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", tag = "v0.1.0" }
+dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", tag = "v0.1.1" }
 ```
 
 ---

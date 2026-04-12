@@ -1,9 +1,9 @@
 [package]
 name = "dtiw385"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Crate to discover and control Orange DTIW385 decoders over the network."
-license-file = "LICENSE"
+license = "MIT"
 
 repository = "https://github.com/bl3tt3r/dtiw385"
 readme = "readme.md"
