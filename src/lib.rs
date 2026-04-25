@@ -243,6 +243,30 @@ pub struct Decoder {
     client: Client,
 }
 
+/// Serializes a [`Decoder`] into its network address components.
+///
+/// Only the `ip` and `port` fields are serialized — the internal HTTP client
+/// is intentionally excluded as it is not transferable across processes or
+/// network boundaries.
+///
+/// # Output
+///
+/// | Field  | Type     | Example         |
+/// |--------|----------|-----------------|
+/// | `ip`   | `string` | `"192.168.1.10"` |
+/// | `port` | `u16`    | `8080`          |
+///
+/// # Example
+///
+/// ```no_run
+/// # use dtiw385::Decoders;
+/// let decoder = Decoders::connect([192, 168, 1, 10], 8080);
+/// let json = serde_json::to_string(&decoder)?;
+/// // {"ip":"192.168.1.10","port":8080}
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+///
+/// > **Note:** This implementation is only available with the `serializable` feature.
 #[cfg(feature = "serializable")]
 impl Serialize for Decoder {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
