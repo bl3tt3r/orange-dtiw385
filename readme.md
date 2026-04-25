@@ -1,11 +1,11 @@
 # dtiw385
 
-[![License](https://img.shields.io/badge/LICENCE-MIT-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/LICENSE-MIT-blue.svg)](./LICENSE)
 ![Rust Edition](https://img.shields.io/badge/edition-2024-orange)
 ![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-000000?logo=rust)
 ![CI](https://github.com/bl3tt3r/dtiw385/actions/workflows/rust.yml/badge.svg)
 
-This crate provides a Rust API to interact with [🟠 Orange](https://www.orange.fr/) DTIW385 decoders, allowing discovery, querying device information, and sending async remote control commands over the network.
+This crate provides a Rust API to interact with [🟠 Orange](https://www.orange.fr/) DTIW385 decoders, allowing device discovery, querying device information, and sending asynchronous remote control commands over the network.
 
 __This project is not affiliated with, endorsed by, or sponsored by Orange.__
 
@@ -19,7 +19,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-dtiw385 = "0.1.1"
+dtiw385 = "0.1.2"
 ```
 
 __Or run the following Cargo command in your project directory: `cargo add dtiw385`__
@@ -35,8 +35,16 @@ dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", branch = "master" }
 
 ```toml
 [dependencies]
-dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", tag = "v0.1.1" }
+dtiw385 = { git = "https://github.com/bl3tt3r/dtiw385", tag = "v0.1.2" }
 ```
+
+---
+
+## 🧩 Features
+
+| Feature        | Description                                           |
+| -------------- | ----------------------------------------------------- |
+| `serializable` | Enable serialization of `Decoder` and `ApiInfosData`. |
 
 ---
 
@@ -65,6 +73,7 @@ Scan a range of IPs and ports to find available devices:
 ```rust
 use dtiw385::Decoders;
 
+// Receiver of discovered decoders
 let mut rx = Decoders::search(
     [192, 168, 1, 1]..=[192, 168, 1, 254],
     8080..=8080,
@@ -182,7 +191,7 @@ cargo run --example get_decoder_infos
 
 ---
 
-License : MIT
+License: MIT
 
 ---
 

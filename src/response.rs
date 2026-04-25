@@ -31,6 +31,7 @@ pub struct ApiEmpty {}
 ///
 /// Obtained via [`Decoder::infos`](crate::Decoder::infos).
 #[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "serializable", derive(serde::Serialize))]
 #[serde(rename_all = "camelCase")]
 pub struct ApiInfosData {
     /// Type of the currently played media (e.g. `"LIVE"`, `"VOD"`).
