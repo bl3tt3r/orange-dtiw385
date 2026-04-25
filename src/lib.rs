@@ -1,6 +1,8 @@
 use crate::response::{ApiEmpty, ApiInfosData, ApiResponse};
 use reqwest::Client;
-use serde::de::DeserializeOwned;
+#[cfg(feature = "serializable")]
+use serde::ser::SerializeStruct;
+use serde::{Serialize, de::DeserializeOwned};
 use std::{
     net::{Ipv4Addr, SocketAddrV4},
     ops::{Deref, RangeInclusive},
@@ -236,11 +238,22 @@ impl DecoderSearch {
 /// }
 /// ```
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serializable", derive(serde::Serialize))]
 pub struct Decoder {
     socket: SocketAddrV4,
-    #[cfg_attr(feature = "serializable", serde(skip))]
     client: Client,
+}
+
+#[cfg(feature = "serializable")]
+impl Serialize for Decoder {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut state = serializer.serialize_struct("Decoder", 2)?;
+        state.serialize_field("ip", &self.socket.ip().to_string())?;
+        state.serialize_field("port", &self.socket.port())?;
+        state.end()
+    }
 }
 
 /// Derefs to [`SocketAddrV4`] so callers can access `.ip()` and `.port()` directly.
