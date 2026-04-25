@@ -236,8 +236,10 @@ impl DecoderSearch {
 /// }
 /// ```
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serializable", derive(serde::Serialize))]
 pub struct Decoder {
     socket: SocketAddrV4,
+    #[cfg_attr(feature = "serializable", serde(skip))]
     client: Client,
 }
 
