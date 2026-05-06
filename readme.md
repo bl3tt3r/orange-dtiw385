@@ -198,3 +198,25 @@ License: MIT
 <p align="center">
   Made with ❤️ and Rust 🦀
 </p>
+
+## 🎮 Web Remote Control Interface
+
+A built-in web interface to control your decoder from any device on your local network.
+
+### Start the server
+
+```bash
+cargo run -- <decoder_ip> <decoder_port>
+```
+
+**Example:**
+```bash
+cargo run -- 192.168.1.X 8080
+```
+
+Then open `http://<your_pc_ip>:3000` in your phone's browser (same WiFi).
+
+### Features
+- All remote control keys available
+- Works from any device on your local network (phone, tablet...)
+- Visual feedback on each button press
